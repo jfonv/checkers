@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions, no-underscore-dangle,
-   no-param-reassign, prefer-template, no-undef */
+   no-param-reassign, prefer-template, no-undef, no-unused-vars */
 
 
 import mongoose from 'mongoose';
@@ -32,26 +32,38 @@ schema.methods.setupBoard = function () {
 
 schema.methods.move = function (currPlayer, piece, newPos, cb) {
   const invalidMoveError = new Error('Error: Invalid Move');
-  if (newPos > 32 || newPos < 1) {
+  const currPiece = this.pieces.find(n => n.name === piece);
+  let moveSucceed = false;
+  if (this.isOutOfBounds(currPiece, newPos)) {
+    cb(invalidMoveError, null);
+  } else if (this.isCollision(newPos)) {
     cb(invalidMoveError, null);
   } else {
-    const currPiece = this.pieces.find(n => n.name === piece);
     const oldRow = Math.floor((currPiece.position - 1) / 4);
     const newRow = Math.floor((newPos - 1) / 4);
-    console.log('vars: (36)', currPiece);
-    // console.log('this.currPlayer', this.currPlayer1);
-    // console.log('currPlayer', this.currPlayer1 === (currPiece.player === 1));
     if (currPiece &&
         (this.currPlayer1 ? this.player1 : this.player2).toString() === currPlayer &&
         this.currPlayer1 === (currPiece.player === 1) &&
         Math.abs(oldRow - newRow) === 1 &&
         !currPiece.king) {
-      console.log('HI!');
-      this.moveOne(currPiece, newPos);
+      moveSucceed = this.moveOne(currPiece, newPos);
+    } else {
+      // console.log('line 49: ', this.currPlayer1);
+      // console.log('line 49: ', currPlayer);
+      // console.log('line 49: ', (this.currPlayer1 ? this.player1 : this.player2).toString());
+      // console.log('line 49: ', currPlayer);
+      // console.log('line 49: ', newPos);
     }
-    this.save(() => {
-      cb(null, this);
-    });
+
+    if (moveSucceed) {
+      this.currPlayer1 = !this.currPlayer1;
+      currPiece.position = newPos;
+      this.save(() => {
+        cb(null, this);
+      });
+    } else {
+      cb(invalidMoveError, null);
+    }
   }
 };
 
@@ -61,15 +73,47 @@ schema.methods.moveOne = function (currPiece, newPos) {
   const even = row % 2;
   const moves = [(currPiece.player % 2 === 1 ? 1 : -1) * (4 - even),
                  (currPiece.player % 2 === 1 ? 1 : -1) * (5 - even)];
-  if(this.currPlayer1 && moves.find((v) => v === diff))
+  // console.log('vars: ');
+  // console.log('diff: ', diff);
+  // console.log('row: ', row);
+  // console.log('even: ', even);
+  // console.log('moves: ', moves);
 
-  console.log('vars: ');
-  console.log('diff: ', diff);
-  console.log('row: ', row);
-  console.log('even: ', even);
-  console.log('moves: ', moves);
+  if (moves.find((v) => v === diff)) {
+    return true;
+  }
 
-  return true;
+  return false;
+};
+
+schema.methods.isOutOfBounds = function (currPiece, newPos) {
+  if (newPos > 32 || newPos < 1) {
+    return true;
+  }
+
+  const currPosMod = currPiece.position % 4;
+  const diff = newPos - currPiece.position;
+  const rowEven = !(((currPiece.position - 1) / 4) % 2);
+  const moves = [];
+  // console.log('diff: ', diff);
+  // console.log('even: ', rowEven);
+  // console.log('moves: ', moves);
+
+  if ((currPosMod === 0 && rowEven) ||
+      (currPosMod === 1 && !rowEven)) {
+    if (diff !== -4 && diff !== 4) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+schema.methods.isCollision = function (newPos) {
+  if (this.pieces.find(v => v.position === newPos)) {
+    return true;
+  }
+  return false;
 };
 
 module.exports = mongoose.model('Game', schema);

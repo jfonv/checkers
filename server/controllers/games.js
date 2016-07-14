@@ -24,7 +24,11 @@ router.put('/:id/move', (req, res) => {
               piece,
               newPos,
               (err2, updatedGame) => {
-                res.send({ game: updatedGame });
+                if (err2) {
+                  res.status(400).send('Error: Invalid Move');
+                } else {
+                  res.send({ game: updatedGame });
+                }
               });
   });
 });
