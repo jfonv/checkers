@@ -31,6 +31,8 @@ describe('Game', () => {
         done();
       });
     });
+  });
+  describe('move', () => {
     it('should move player 1 in the right direction for said player', sinon.test(function (done) {
       const game = new Game({ player1: '608699f277640568c18b2b36',
                               player2: '608699f277640568c18b2b37' });
@@ -100,6 +102,42 @@ describe('Game', () => {
               expect(err3.message).to.equal('Error: Invalid Move');
               expect(updateGame2.pieces[8].position).to.equal(14);
               expect(updateGame2.pieces[12].position).to.equal(17);
+              done();
+            });
+          });
+        });
+      });
+    }));
+    it('should allow player 1 to jump player 2', sinon.test(function (done) {
+      let game = new Game({ player1: '608699f277640568c18b2b36',
+                              player2: '608699f277640568c18b2b37' });
+      this.stub(game, 'save').yields(null, this);
+      game.validate(() => {
+        game.setupBoard();
+        game.move('608699f277640568c18b2b36', 'p9', 14, (err1, updateGame1) => {
+          updateGame1.move('608699f277640568c18b2b37', 'p13', 17, (err2, updateGame2) => {
+            updateGame2.move('608699f277640568c18b2b36', 'p9', 21, (err3, gameNew) => {
+              expect(err3).to.be.null;
+              expect(gameNew.pieces[8].position).to.equal(21);
+              expect(gameNew.pieces[12].position).to.equal(22);
+              done();
+            });
+          });
+        });
+      });
+    }));
+    it('should now allow player 1 to jump player 1', sinon.test(function (done) {
+      let game = new Game({ player1: '608699f277640568c18b2b36',
+                              player2: '608699f277640568c18b2b37' });
+      this.stub(game, 'save').yields(null, this);
+      game.validate(() => {
+        game.setupBoard();
+        game.move('608699f277640568c18b2b36', 'p11', 15, (err1, updateGame1) => {
+          updateGame1.move('608699f277640568c18b2b37', 'p13', 17, (err2, updateGame2) => {
+            updateGame2.move('608699f277640568c18b2b36', 'p4', 11, (err3, gameNew) => {
+              expect(err3).to.be.ok;
+              expect(err3.message).to.equal('Error: Invalid Move');
+              expect(updateGame2.pieces[3].position).to.equal(4);
               done();
             });
           });
