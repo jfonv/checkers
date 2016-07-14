@@ -1,0 +1,180 @@
+[
+  {
+      "_id" : { "$oid": "5786b12f8a1461dcd58dac22" },
+      "player1" : { "$oid": "608699f277640568c18b2b36" },
+      "player2" : { "$oid": "608699f277640568c18b2b37" },
+      "dateCreated" : { "$date": "2016-07-13T21:22:55.601Z" },
+      "completed" : false,
+      "pieces" : [
+          {
+              "position" : 1,
+              "player" : 1,
+              "name" : "p1",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac3a" },
+              "king" : false
+          },
+          {
+              "position" : 2,
+              "player" : 1,
+              "name" : "p2",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac39" },
+              "king" : false
+          },
+          {
+              "position" : 3,
+              "player" : 1,
+              "name" : "p3",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac38" },
+              "king" : false
+          },
+          {
+              "position" : 4,
+              "player" : 1,
+              "name" : "p4",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac37" },
+              "king" : false
+          },
+          {
+              "position" : 5,
+              "player" : 1,
+              "name" : "p5",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac36" },
+              "king" : false
+          },
+          {
+              "position" : 6,
+              "player" : 1,
+              "name" : "p6",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac35" },
+              "king" : false
+          },
+          {
+              "position" : 7,
+              "player" : 1,
+              "name" : "p7",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac34" },
+              "king" : false
+          },
+          {
+              "position" : 8,
+              "player" : 1,
+              "name" : "p8",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac33" },
+              "king" : false
+          },
+          {
+              "position" : 9,
+              "player" : 1,
+              "name" : "p9",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac32" },
+              "king" : false
+          },
+          {
+              "position" : 10,
+              "player" : 1,
+              "name" : "p10",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac31" },
+              "king" : false
+          },
+          {
+              "position" : 11,
+              "player" : 1,
+              "name" : "p11",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac30" },
+              "king" : false
+          },
+          {
+              "position" : 12,
+              "player" : 1,
+              "name" : "p12",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac2f" },
+              "king" : false
+          },
+          {
+              "position" : 21,
+              "player" : 2,
+              "name" : "p13",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac2e" },
+              "king" : false
+          },
+          {
+              "position" : 22,
+              "player" : 2,
+              "name" : "p14",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac2d" },
+              "king" : false
+          },
+          {
+              "position" : 23,
+              "player" : 2,
+              "name" : "p15",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac2c" },
+              "king" : false
+          },
+          {
+              "position" : 24,
+              "player" : 2,
+              "name" : "p16",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac2b" },
+              "king" : false
+          },
+          {
+              "position" : 25,
+              "player" : 2,
+              "name" : "p17",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac2a" },
+              "king" : false
+          },
+          {
+              "position" : 26,
+              "player" : 2,
+              "name" : "p18",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac29" },
+              "king" : false
+          },
+          {
+              "position" : 27,
+              "player" : 2,
+              "name" : "p19",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac28" },
+              "king" : false
+          },
+          {
+              "position" : 28,
+              "player" : 2,
+              "name" : "p20",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac27" },
+              "king" : false
+          },
+          {
+              "position" : 29,
+              "player" : 2,
+              "name" : "p21",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac26" },
+              "king" : false
+          },
+          {
+              "position" : 30,
+              "player" : 2,
+              "name" : "p22",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac25" },
+              "king" : false
+          },
+          {
+              "position" : 31,
+              "player" : 2,
+              "name" : "p23",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac24" },
+              "king" : false
+          },
+          {
+              "position" : 32,
+              "player" : 2,
+              "name" : "p24",
+              "_id" : { "$oid": "5786b12f8a1461dcd58dac23" },
+              "king" : false
+          }
+      ],
+      "__v" : 0
+  }
+]

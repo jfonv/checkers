@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions, no-underscore-dangle,
-   no-param-reassign, prefer-template */
+   no-param-reassign, prefer-template, no-undef */
 
 
 import mongoose from 'mongoose';
@@ -16,9 +16,10 @@ const schema = new Schema({
   player1: { type: mongoose.Schema.ObjectId, ref: 'Player' },
   player2: { type: mongoose.Schema.ObjectId, ref: 'Player' },
   dateCreated: { type: Date, default: Date.now },
+  currPlayer1: { type: Boolean, default: true },
 });
 
-schema.methods.fillPieces = function () {
+schema.methods.setupBoard = function () {
   this.pieces = new Array(24).fill({});
   this.pieces = this.pieces.map((v, i) => {
     const newV = v;
@@ -30,9 +31,45 @@ schema.methods.fillPieces = function () {
 };
 
 schema.methods.move = function (currPlayer, piece, newPos, cb) {
-  console.log('got here mom! line 33', this);
-  this.pieces.find(n => n.name === piece).position = newPos;
-  return cb(null, this);
+  const invalidMoveError = new Error('Error: Invalid Move');
+  if (newPos > 32 || newPos < 1) {
+    cb(invalidMoveError, null);
+  } else {
+    const currPiece = this.pieces.find(n => n.name === piece);
+    const oldRow = Math.floor((currPiece.position - 1) / 4);
+    const newRow = Math.floor((newPos - 1) / 4);
+    console.log('vars: (36)', currPiece);
+    // console.log('this.currPlayer', this.currPlayer1);
+    // console.log('currPlayer', this.currPlayer1 === (currPiece.player === 1));
+    if (currPiece &&
+        (this.currPlayer1 ? this.player1 : this.player2).toString() === currPlayer &&
+        this.currPlayer1 === (currPiece.player === 1) &&
+        Math.abs(oldRow - newRow) === 1 &&
+        !currPiece.king) {
+      console.log('HI!');
+      this.moveOne(currPiece, newPos);
+    }
+    this.save(() => {
+      cb(null, this);
+    });
+  }
+};
+
+schema.methods.moveOne = function (currPiece, newPos) {
+  const diff = newPos - currPiece.position;
+  const row = Math.floor((currPiece.position - 1) / 4);
+  const even = row % 2;
+  const moves = [(currPiece.player % 2 === 1 ? 1 : -1) * (4 - even),
+                 (currPiece.player % 2 === 1 ? 1 : -1) * (5 - even)];
+  if(this.currPlayer1 && moves.find((v) => v === diff))
+
+  console.log('vars: ');
+  console.log('diff: ', diff);
+  console.log('row: ', row);
+  console.log('even: ', even);
+  console.log('moves: ', moves);
+
+  return true;
 };
 
 module.exports = mongoose.model('Game', schema);

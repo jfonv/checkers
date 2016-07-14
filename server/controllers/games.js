@@ -7,7 +7,7 @@ const router = module.exports = express.Router();
 // index
 router.post('/', (req, res) => {
   const game = new Game(req.body);
-  game.fillPieces();
+  game.setupBoard();
   game.save({ new: true }, () => {
     res.send({ game });
   });

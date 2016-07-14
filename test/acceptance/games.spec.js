@@ -6,7 +6,7 @@ const request = require('supertest');
 const app = require('../../dst/server');
 const cp = require('child_process');
 
-describe('Game', () => {
+describe('Games', () => {
   beforeEach((done) => {
     cp.execFile(`${__dirname}/../scripts/pop_players.sh`,
        { cwd: `${__dirname}/../scripts` }, () => {
