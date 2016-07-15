@@ -66,7 +66,6 @@ schema.methods.move = function (currPlayer, piece, newPos, cb) {
         this.currPlayer1 === (currPiece.player === 1) &&
         Math.abs(oldRow - newRow) === 2 &&
         !currPiece.king) {
-      console.log('got here 654654, ', moveSucceed, piece);
       const jumpMoveSucceed = this.moveJump(currPiece, newPos);
       if (jumpMoveSucceed) {
         moveSucceed = true;
@@ -83,22 +82,18 @@ schema.methods.move = function (currPlayer, piece, newPos, cb) {
         moveSucceed = true;
         pieceRemoveIdx = jumpMoveSucceed.removeIdx;
       }
-    // we fucked up!
     } else {
-      console.log('line 49: ', this.currPlayer1);
-      console.log('line 49: ', currPlayer);
-      console.log('line 49: ', (this.currPlayer1 ? this.player1 : this.player2).toString());
-      console.log('line 49: ', currPiece);
-      console.log('line 49: ', newPos);
+      console.log('Something Error Happened! Ln 86');
     }
 
     if (moveSucceed) {
-      console.log(currPiece, newPos);
       currPiece.position = newPos;
       if (pieceRemoveIdx > -1) {
         this.pieces.splice(pieceRemoveIdx, 1);
       }
-      if (this.checkBoardForWin()) {
+      const isWinOrDraw = this.checkBoardForWin();
+      const isDraw = (isWinOrDraw.draw);
+      if (isWinOrDraw) {
         this.completed = true;
       } else {
         this.currPlayer1 = !this.currPlayer1;
@@ -107,7 +102,9 @@ schema.methods.move = function (currPlayer, piece, newPos, cb) {
         currPiece.king = true;
       }
       this.save(() => {
-        cb(null, this);
+        this.updatePlayers(isDraw, () => {
+          cb(null, this);
+        });
       });
     } else {
       cb(invalidMoveError, null);
@@ -273,7 +270,7 @@ schema.methods.checkBoardForWin = function () {
       if ((player1Left[0].king && player2Left[0].king) ||
           (!player1Left[0].king && !player2Left[0].king)) {
         // DRAW
-        return false;
+        return { draw: true };
       }
       if (player1Left[0].king) {
         this.currPlayer1 = true;
@@ -284,6 +281,46 @@ schema.methods.checkBoardForWin = function () {
     }
   }
   return false;
+};
+
+schema.methods.updatePlayers = function (isDraw, cb) {
+  const winner = (this.currPlayer1 ? this.player1 : this.player2);
+  const p1Win = (winner === this.player1);
+  const p2Win = (winner === this.player2);
+  if (isDraw) {
+    this.model('Player').findById(this.player1, (err, player1) => {
+      player1.draws += 1;
+      this.model('Player').findById(this.player2, (err2, player2) => {
+        player2.draws += 1;
+        player1.save(() => {
+          player2.save(() => {
+            cb(null, this);
+          });
+        });
+      });
+    });
+  } else {
+    this.model('Player').findById(this.player1, (err, player1) => {
+      console.log('line 304 - ', player1);
+      if (p1Win) {
+        player1.wins += 1;
+      } else {
+        player1.losses += 1;
+      }
+      this.model('Player').findById(this.player2, (err2, player2) => {
+        if (p2Win) {
+          player2.wins += 1;
+        } else {
+          player2.losses += 1;
+        }
+        player1.save(() => {
+          player2.save(() => {
+            cb(null, this);
+          });
+        });
+      });
+    });
+  }
 };
 
 module.exports = mongoose.model('Game', schema);

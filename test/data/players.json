@@ -5,6 +5,7 @@
     "dateCreated" : { "$date": "2016-03-15T00:00:00.000Z" },
     "losses" : 15,
     "wins" : 21,
+    "draws" : 15,
     "__v" : 0
   },
   {
@@ -13,6 +14,7 @@
     "dateCreated" : { "$date": "2016-03-15T00:00:00.000Z" },
     "losses" : 21,
     "wins" : 15,
+    "draws" : 15,
     "__v" : 0
   }
 ]

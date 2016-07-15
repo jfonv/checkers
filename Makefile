@@ -30,6 +30,10 @@ watch: all
 	@echo [watch]
 	@$(BIN)/chokidar 'client/**/*.js' 'server/**/*.js' 'test/**/*.js' -c 'make all'
 
+watchb: main ready compile-front compile-back lint
+	@echo [watch]
+	@$(BIN)/chokidar 'client/**/*.js' 'server/**/*.js' -c 'make watchb'
+
 fast-tests-watch: fast-tests
 	@echo [fast-tests-watch]
 	@$(BIN)/chokidar 'client/**/*.js' 'server/**/*.js' 'test/**/*.js' -c 'make fast-tests'

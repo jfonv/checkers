@@ -161,24 +161,25 @@ describe('Game', () => {
         });
       });
     }));
-    it.only('should allow a kinged player 2 to jump backwards over player 1', sinon.test(function (done) {
-      const game = new Game({ player1: '608699f277640568c18b2b36',
-                              player2: '608699f277640568c18b2b37' });
-      this.stub(game, 'save').yields(null, this);
-      game.validate(() => {
-        game.setupBoard();
-        game.move('608699f277640568c18b2b36', 'p11', 15, (err1, updateGame1) => {
-          updateGame1.pieces[13].position = 11;
-          updateGame1.pieces[13].king = true;
-          updateGame1.move('608699f277640568c18b2b37', 'p14', 18, (err2, newGame) => {
-            expect(err2).to.be.null;
-            expect(newGame.pieces[12].position).to.equal(18);
-            expect(newGame.pieces[10].position).to.equal(12);
-            done();
-          });
-        });
-      });
-    }));
+    it('should allow a kinged player 2 to jump backwards over player 1',
+            sinon.test(function (done) {
+              const game = new Game({ player1: '608699f277640568c18b2b36',
+                                      player2: '608699f277640568c18b2b37' });
+              this.stub(game, 'save').yields(null, this);
+              game.validate(() => {
+                game.setupBoard();
+                game.move('608699f277640568c18b2b36', 'p11', 15, (err1, updateGame1) => {
+                  updateGame1.pieces[13].position = 11;
+                  updateGame1.pieces[13].king = true;
+                  updateGame1.move('608699f277640568c18b2b37', 'p14', 18, (err2, newGame) => {
+                    expect(err2).to.be.null;
+                    expect(newGame.pieces[12].position).to.equal(18);
+                    expect(newGame.pieces[10].position).to.equal(12);
+                    done();
+                  });
+                });
+              });
+            }));
     it('should allow player 1 win', sinon.test(function (done) {
       const game = new Game({ player1: '608699f277640568c18b2b36',
                               player2: '608699f277640568c18b2b37' });
