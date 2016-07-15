@@ -33,47 +33,78 @@ schema.methods.setupBoard = function () {
 schema.methods.move = function (currPlayer, piece, newPos, cb) {
   const invalidMoveError = new Error('Error: Invalid Move');
   const currPiece = this.pieces.find(n => n.name === piece);
+
   let moveSucceed = false;
   let pieceRemoveIdx = -1;
   if (this.isOutOfBounds(currPiece, newPos)) {
+    console.log('got here yo40');
     cb(invalidMoveError, null);
   } else if (this.isCollision(newPos)) {
+    console.log('got here yo43');
     cb(invalidMoveError, null);
   } else {
     const oldRow = Math.floor((currPiece.position - 1) / 4);
     const newRow = Math.floor((newPos - 1) / 4);
+    // Basic move!
     if (currPiece &&
         (this.currPlayer1 ? this.player1 : this.player2).toString() === currPlayer &&
         this.currPlayer1 === (currPiece.player === 1) &&
         Math.abs(oldRow - newRow) === 1 &&
         !currPiece.king) {
       moveSucceed = this.moveOne(currPiece, newPos);
+    // King basic move!
+    } else if (currPiece &&
+        (this.currPlayer1 ? this.player1 : this.player2).toString() === currPlayer &&
+        this.currPlayer1 === (currPiece.player === 1) &&
+        Math.abs(oldRow - newRow) === 1 &&
+        currPiece.king) {
+      moveSucceed = this.kingMoveOne(currPiece, newPos);
+      console.log('got here 57, ', moveSucceed, piece);
+    // Jump move!
     } else if (currPiece &&
         (this.currPlayer1 ? this.player1 : this.player2).toString() === currPlayer &&
         this.currPlayer1 === (currPiece.player === 1) &&
         Math.abs(oldRow - newRow) === 2 &&
         !currPiece.king) {
+      console.log('got here 654654, ', moveSucceed, piece);
       const jumpMoveSucceed = this.moveJump(currPiece, newPos);
       if (jumpMoveSucceed) {
         moveSucceed = true;
-        console.log('in array: ', jumpMoveSucceed.removeIdx);
         pieceRemoveIdx = jumpMoveSucceed.removeIdx;
       }
+    // King jump move!
+    } else if (currPiece &&
+        (this.currPlayer1 ? this.player1 : this.player2).toString() === currPlayer &&
+        this.currPlayer1 === (currPiece.player === 1) &&
+        Math.abs(oldRow - newRow) === 2 &&
+        currPiece.king) {
+      const jumpMoveSucceed = this.kingMoveJump(currPiece, newPos);
+      if (jumpMoveSucceed) {
+        moveSucceed = true;
+        pieceRemoveIdx = jumpMoveSucceed.removeIdx;
+      }
+    // we fucked up!
     } else {
-      // console.log('line 49: ', this.currPlayer1);
-      // console.log('line 49: ', currPlayer);
-      // console.log('line 49: ', (this.currPlayer1 ? this.player1 : this.player2).toString());
-      // console.log('line 49: ', currPlayer);
-      // console.log('line 49: ', newPos);
+      console.log('line 49: ', this.currPlayer1);
+      console.log('line 49: ', currPlayer);
+      console.log('line 49: ', (this.currPlayer1 ? this.player1 : this.player2).toString());
+      console.log('line 49: ', currPiece);
+      console.log('line 49: ', newPos);
     }
 
     if (moveSucceed) {
-      this.currPlayer1 = !this.currPlayer1;
+      console.log(currPiece, newPos);
       currPiece.position = newPos;
       if (pieceRemoveIdx > -1) {
-        // console.log('in array: ', this.pieces);
         this.pieces.splice(pieceRemoveIdx, 1);
-        // console.log('out array: ', this.pieces);
+      }
+      if (this.checkBoardForWin()) {
+        this.completed = true;
+      } else {
+        this.currPlayer1 = !this.currPlayer1;
+      }
+      if (this.isKinged(currPiece, newPos)) {
+        currPiece.king = true;
       }
       this.save(() => {
         cb(null, this);
@@ -102,14 +133,54 @@ schema.methods.moveOne = function (currPiece, newPos) {
 
   return false;
 };
+schema.methods.kingMoveOne = function (currPiece, newPos) {
+  const diff = newPos - currPiece.position;
+  const row = Math.floor((currPiece.position - 1) / 4);
+  const even = row % 2;
+  const moves = [(4 - even),
+                 (5 - even),
+                   -1 * (3 + even),
+                 -1 * (4 + even)];
+  // console.log('vars: ');
+  // console.log('diff: ', diff);
+  // console.log('row: ', row);
+  // console.log('even: ', even);
+  // console.log('moves: ', moves);
+  if (moves.find((v) => v === diff)) {
+    return true;
+  }
+
+  return false;
+};
+schema.methods.isKinged = function (currPiece, newPos) {
+  if ((newPos > 28 && currPiece.player === 1) ||
+     (newPos < 5 && currPiece.player === 2)) {
+    return true;
+  }
+
+  return false;
+};
 
 schema.methods.moveJump = function (currPiece, newPos) {
   const currPosition = currPiece.position;
   const diff = newPos - currPosition;
-  const rowEven = !(((currPiece.position - 1) / 4) % 2);
-  const jumpedPos = currPosition + (rowEven ? Math.ceil(diff / 2) : Math.floor(diff / 2));
+  const mathStuff = ((currPiece.position - 1) % 4);
+  const rowEven = !(mathStuff % 2);
+  let jumpedPos = 0;
+  if (this.currPlayer1 && diff > 0) {
+    jumpedPos =
+      currPosition + (rowEven ? Math.ceil(diff / 2) : Math.floor(diff / 2));
+  } else if (!this.currPlayer1 && diff < 0) {
+    jumpedPos =
+      currPosition + (rowEven ? Math.floor(diff / 2) : Math.ceil(diff / 2));
+  } else {
+    return false;
+  }
+  //
   // console.log('line 99: ', currPosition);
   // console.log('line 99: ', diff);
+  // console.log('line 99: ', mathStuff);
+  // console.log('line 99: ', rowEven);
   // console.log('line 99: ', jumpedPos);
   // console.log('line 99: ', this.isCollision(jumpedPos));
 
@@ -127,10 +198,38 @@ schema.methods.moveJump = function (currPiece, newPos) {
   if (playerAtJump.player === currPiece.player) {
     return false;
   }
-
   return { success: true, removeIdx: playerAtJump.index };
 };
+schema.methods.kingMoveJump = function (currPiece, newPos) {
+  const currPosition = currPiece.position;
+  const diff = newPos - currPosition;
+  const mathStuff = ((currPiece.position - 1) % 4);
+  const rowEven = !(mathStuff % 2);
+  let jumpedPos = 0;
+  if (diff > 0) {
+    jumpedPos =
+      currPosition + (rowEven ? Math.ceil(diff / 2) : Math.floor(diff / 2));
+  } else {
+    jumpedPos =
+      currPosition + (rowEven ? Math.floor(diff / 2) : Math.ceil(diff / 2));
+  }
 
+  if (!this.isCollision(jumpedPos)) {
+    return false;
+  }
+  const playerAtJump = this.pieces.find((v, i) => {
+    if (v.position === jumpedPos) {
+      v.index = i;
+      return true;
+    }
+    return false;
+  });
+
+  if (playerAtJump.player === currPiece.player) {
+    return false;
+  }
+  return { success: true, removeIdx: playerAtJump.index };
+};
 schema.methods.isOutOfBounds = function (currPiece, newPos) {
   if (newPos > 32 || newPos < 1) {
     return true;
@@ -161,6 +260,28 @@ schema.methods.isOutOfBounds = function (currPiece, newPos) {
 schema.methods.isCollision = function (newPos) {
   if (this.pieces.find(v => v.position === newPos)) {
     return true;
+  }
+  return false;
+};
+
+schema.methods.checkBoardForWin = function () {
+  const player1Left = this.pieces.filter(v => v.player === 1);
+  const player2Left = this.pieces.filter(v => v.player === 2);
+
+  if (player1Left && player2Left) {
+    if (player1Left.length === 1 && player2Left.length === 1) {
+      if ((player1Left[0].king && player2Left[0].king) ||
+          (!player1Left[0].king && !player2Left[0].king)) {
+        // DRAW
+        return false;
+      }
+      if (player1Left[0].king) {
+        this.currPlayer1 = true;
+        return true;
+      }
+      this.currPlayer1 = false;
+      return true;
+    }
   }
   return false;
 };

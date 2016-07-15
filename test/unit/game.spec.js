@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions, no-underscore-dangle,
-  prefer-arrow-callback */
+  prefer-arrow-callback, no-param-reassign */
 
 
 const expect = require('chai').expect;
@@ -90,7 +90,7 @@ describe('Game', () => {
       });
     }));
     it('should not move player 1 onto another piece', sinon.test(function (done) {
-      let game = new Game({ player1: '608699f277640568c18b2b36',
+      const game = new Game({ player1: '608699f277640568c18b2b36',
                               player2: '608699f277640568c18b2b37' });
       this.stub(game, 'save').yields(null, this);
       game.validate(() => {
@@ -109,7 +109,7 @@ describe('Game', () => {
       });
     }));
     it('should allow player 1 to jump player 2', sinon.test(function (done) {
-      let game = new Game({ player1: '608699f277640568c18b2b36',
+      const game = new Game({ player1: '608699f277640568c18b2b36',
                               player2: '608699f277640568c18b2b37' });
       this.stub(game, 'save').yields(null, this);
       game.validate(() => {
@@ -127,20 +127,89 @@ describe('Game', () => {
       });
     }));
     it('should now allow player 1 to jump player 1', sinon.test(function (done) {
-      let game = new Game({ player1: '608699f277640568c18b2b36',
+      const game = new Game({ player1: '608699f277640568c18b2b36',
                               player2: '608699f277640568c18b2b37' });
       this.stub(game, 'save').yields(null, this);
       game.validate(() => {
         game.setupBoard();
         game.move('608699f277640568c18b2b36', 'p11', 15, (err1, updateGame1) => {
           updateGame1.move('608699f277640568c18b2b37', 'p13', 17, (err2, updateGame2) => {
-            updateGame2.move('608699f277640568c18b2b36', 'p4', 11, (err3, gameNew) => {
+            updateGame2.move('608699f277640568c18b2b36', 'p4', 11, (err3) => {
               expect(err3).to.be.ok;
               expect(err3.message).to.equal('Error: Invalid Move');
               expect(updateGame2.pieces[3].position).to.equal(4);
               done();
             });
           });
+        });
+      });
+    }));
+    it('should not allow player 2 to jump backwards over player 1', sinon.test(function (done) {
+      const game = new Game({ player1: '608699f277640568c18b2b36',
+                              player2: '608699f277640568c18b2b37' });
+      this.stub(game, 'save').yields(null, this);
+      game.validate(() => {
+        game.setupBoard();
+        game.move('608699f277640568c18b2b36', 'p11', 15, (err1, updateGame1) => {
+          updateGame1.pieces[13].position = 11;
+          updateGame1.move('608699f277640568c18b2b37', 'p14', 18, (err2, newGame) => {
+            expect(err2).to.be.ok;
+            expect(err2.message).to.equal('Error: Invalid Move');
+            expect(newGame).to.be.null;
+            done();
+          });
+        });
+      });
+    }));
+    it.only('should allow a kinged player 2 to jump backwards over player 1', sinon.test(function (done) {
+      const game = new Game({ player1: '608699f277640568c18b2b36',
+                              player2: '608699f277640568c18b2b37' });
+      this.stub(game, 'save').yields(null, this);
+      game.validate(() => {
+        game.setupBoard();
+        game.move('608699f277640568c18b2b36', 'p11', 15, (err1, updateGame1) => {
+          updateGame1.pieces[13].position = 11;
+          updateGame1.pieces[13].king = true;
+          updateGame1.move('608699f277640568c18b2b37', 'p14', 18, (err2, newGame) => {
+            expect(err2).to.be.null;
+            expect(newGame.pieces[12].position).to.equal(18);
+            expect(newGame.pieces[10].position).to.equal(12);
+            done();
+          });
+        });
+      });
+    }));
+    it('should allow player 1 win', sinon.test(function (done) {
+      const game = new Game({ player1: '608699f277640568c18b2b36',
+                              player2: '608699f277640568c18b2b37' });
+      this.stub(game, 'save').yields(null, this);
+      game.validate(() => {
+        game.setupBoard();
+        game.pieces.splice(0, 5);
+        game.pieces.splice(1, 17);
+        game.pieces[0].king = true;
+        game.move('608699f277640568c18b2b36', 'p6', 9, (err3, gameNew) => {
+          expect(err3).to.be.null;
+          // expect(err3.message).to.equal('Error: Invalid Move');
+          expect(gameNew.completed).to.equal(true);
+          expect(gameNew.currPlayer1).to.equal(true);
+          done();
+        });
+      });
+    }));
+    it('should allow player 1 to king p1', sinon.test(function (done) {
+      const game = new Game({ player1: '608699f277640568c18b2b36',
+                              player2: '608699f277640568c18b2b37' });
+      this.stub(game, 'save').yields(null, this);
+      game.validate(() => {
+        game.setupBoard();
+        game.pieces.splice(2, 10);
+        game.pieces.splice(4, 10);
+        game.pieces[0].position = 27;
+        game.move('608699f277640568c18b2b36', 'p1', 31, (err3, gameNew) => {
+          expect(err3).to.be.null;
+          expect(gameNew.pieces[0].king).to.equal(true);
+          done();
         });
       });
     }));

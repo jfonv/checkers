@@ -153,5 +153,50 @@ describe('Games', () => {
         });
       });
     });
+    it('should allow the player to jump', (done) => {
+      request(app)
+      .put('/games/5786b12f8a1461dcd58dac22/move')
+      .send({ player: '608699f277640568c18b2b36',
+              piece: 'p9',
+              newPos: 14,
+            })
+      .end(() => {
+        request(app)
+        .put('/games/5786b12f8a1461dcd58dac22/move')
+        .send({ player: '608699f277640568c18b2b37',
+                piece: 'p13',
+                newPos: 17,
+              })
+        .end(() => {
+          request(app)
+          .put('/games/5786b12f8a1461dcd58dac22/move')
+          .send({ player: '608699f277640568c18b2b36',
+                  piece: 'p9',
+                  newPos: 21,
+                })
+          .end((err, rsp) => {
+            expect(err).to.be.null;
+            expect(rsp.status).to.equal(200);
+            expect(rsp.body.game.pieces[8].position).to.equal(21);
+            expect(rsp.body.game.pieces[12].name).to.equal('p14');
+            done();
+          });
+        });
+      });
+    });
+    it('should allow the player to jump empty positions', (done) => {
+      request(app)
+      .put('/games/5786b12f8a1461dcd58dac22/move')
+      .send({ player: '608699f277640568c18b2b36',
+              piece: 'p9',
+              newPos: 18,
+            })
+      .end((err, rsp) => {
+        expect(err).to.be.null;
+        expect(rsp.status).to.equal(400);
+        expect(rsp.text).to.equal('Error: Invalid Move');
+        done();
+      });
+    });
   });
 });
