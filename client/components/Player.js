@@ -1,4 +1,5 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable react/prop-types, no-restricted-syntax, no-debugger
+   no-unused-vars */
 
 import React from 'react';
 // import Nav from './Nav';
@@ -6,13 +7,26 @@ import React from 'react';
 class Player extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = { players: [] };
     this.update = this.update.bind(this);
+    this.updatePlayerList = this.updatePlayerList.bind(this);
+  }
+
+  componentDidMount() {
+    this.updatePlayerList();
+  }
+
+  updatePlayerList() {
+    fetch('//localhost:3333/players/')
+      .then(r => r.json())
+      .then(j => {
+        const players = j.players;
+        this.setState({ players });
+      });
   }
 
   update() {
     const name = this.refs.player.value;
-    console.log('Name???', name);
     const url = '//localhost:3333/players/';
     // call database
     fetch(url, {
@@ -20,41 +34,21 @@ class Player extends React.Component {
       body: JSON.stringify({ name }),
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-    }).then((response) => {
-      response.text().then((responseText) => {
-        if (JSON.parse(responseText).player.name) {
-          this.updatePlayerList();
-          this.refs.player.value = '';
-        } else {
-          console.log('ASDJL:KJASLKDJA:SLDKJ');
-        }
-      });
-    });
-  }
-  updatePlayerList() {
-    const name = this.refs.player.value;
-    console.log('Name???', name);
-    const url = '//localhost:3333/players/';
-    // call database
-    fetch(url, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin',
-    }).then((response) => {
-      response.text().then((responseText) => {
-        const responseBack = JSON.parse(responseText).players;
-        if (responseBack) {
-          console.log(responseBack);
-        } else {
-          //
-        }
-      });
+    }).then(r => r.json())
+    .then(j => {
+      const pArr = this.state.players;
+      pArr.push(j);
+      this.setState({ players: pArr });
+      this.refs.player.value = '';
     });
   }
 
   // http://localhost:3333/players/
 
   render() {
+    const playerList = this.state.players;
+    console.log('logloglog: ', playerList);
+
     return (
       <div>
         <h1>Checkers - Create Player </h1>
@@ -63,6 +57,11 @@ class Player extends React.Component {
           <input className="form-control" ref="player" type="text" />
         </div>
         <button className="btn btn-primary" onClick={this.update}>Create</button>
+        <div>
+          <ul>
+            {playerList.map((t, i) => <li key={i}>{t.name}</li>)}
+          </ul>
+        </div>
       </div>);
   }
 }
