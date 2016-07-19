@@ -83,7 +83,7 @@ schema.methods.move = function (currPlayer, piece, newPos, cb) {
         pieceRemoveIdx = jumpMoveSucceed.removeIdx;
       }
     } else {
-      console.log('Something Error Happened! Ln 86');
+      // cb(invalidMoveError, null);
     }
 
     if (moveSucceed) {
@@ -116,13 +116,13 @@ schema.methods.moveOne = function (currPiece, newPos) {
   const diff = newPos - currPiece.position;
   const row = Math.floor((currPiece.position - 1) / 4);
   const even = row % 2;
-  const moves = [(currPiece.player % 2 === 1 ? 1 : -1) * (4 - even),
-                 (currPiece.player % 2 === 1 ? 1 : -1) * (5 - even)];
-  // console.log('vars: ');
-  // console.log('diff: ', diff);
-  // console.log('row: ', row);
-  // console.log('even: ', even);
-  // console.log('moves: ', moves);
+  const moves = [(currPiece.player % 2 === 1 ? 1 : -1) * (4 - (even ? 1 : 0)),
+                 (currPiece.player % 2 === 1 ? 1 : -1) * (5 - (even ? 1 : 0))];
+  console.log('vars: ');
+  console.log('diff: ', diff);
+  console.log('row: ', row);
+  console.log('even: ', even);
+  console.log('moves: ', moves);
 
   if (moves.find((v) => v === diff)) {
     return true;
@@ -236,9 +236,9 @@ schema.methods.isOutOfBounds = function (currPiece, newPos) {
   const diff = newPos - currPiece.position;
   const rowEven = !(((currPiece.position - 1) / 4) % 2);
   const moves = [];
-  // console.log('diff: ', diff);
-  // console.log('even: ', rowEven);
-  // console.log('moves: ', moves);
+  console.log('diff: ', diff);
+  console.log('even: ', rowEven);
+  console.log('moves: ', moves);
 
   if ((currPosMod === 0 && rowEven) ||
       (currPosMod === 1 && !rowEven)) {

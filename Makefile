@@ -40,4 +40,4 @@ fast-tests-watch: fast-tests
 
 fast-tests: main ready compile-back tests
 
-all: main ready compile-front compile-back lint tests
+all: main ready compile-front compile-back lint

@@ -37,7 +37,7 @@ class Player extends React.Component {
     }).then(r => r.json())
     .then(j => {
       const pArr = this.state.players;
-      pArr.push(j);
+      pArr.push(j.player);
       this.setState({ players: pArr });
       this.refs.player.value = '';
     });

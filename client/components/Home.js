@@ -6,11 +6,12 @@ import Game from './Game';
 class Home extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { game: {}, playerList: [], p1: null, p2: null };
+    this.state = { game: {}, playerList: [], p1: null, p2: null, started: false };
     this.update = this.update.bind(this);
     this.setP1 = this.setP1.bind(this);
     this.setP2 = this.setP2.bind(this);
     this.updatePlayerList = this.updatePlayerList.bind(this);
+    this.startGame = this.startGame.bind(this);
   }
 
   componentDidMount() {
@@ -25,8 +26,6 @@ class Home extends React.Component {
         this.setState({ playerList });
       });
   }
-
-
 
   update() {
     const name = this.refs.player.value;
@@ -55,11 +54,16 @@ class Home extends React.Component {
   }
   // http://localhost:3333/players/
 
+  startGame() {
+    if (this.refs.player1.value !== this.refs.player2.value) {
+      this.setP1();
+      this.setP2();
+      this.setState({ started: true });
+    }
+  }
+
   render() {
     const playerList = this.state.playerList;
-    const game = (this.state.p1 != null && this.state.p2 != null) ?
-      <Game player1={this.state.p1} player2={this.state.p2} /> :
-      '';
     let button = (
       <button
         className="btn btn-primary"
@@ -67,6 +71,13 @@ class Home extends React.Component {
       >
         Start Game!
       </button>);
+    const game = this.state.started ?
+                  (<Game
+                    player1={this.state.p1}
+                    player2={this.state.p2}
+                    game={(this.state.game) ?
+                          (this.state.game) : 'joe'}
+                  />) : '';
     console.log('logloglog: ', playerList);
     if (this.refs.player1 && this.refs.player1.value === this.refs.player2.value) {
       button = '';

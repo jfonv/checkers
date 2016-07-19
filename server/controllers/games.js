@@ -18,13 +18,13 @@ router.put('/:id/move', (req, res) => {
   const playerId = req.body.player;
   const piece = req.body.piece;
   const newPos = req.body.newPos;
-  // console.log('got here mom! line 20: ', gameId);
   Game.findById(gameId, (err, game) => {
     game.move(playerId,
               piece,
               newPos,
               (err2, updatedGame) => {
                 if (err2) {
+                  console.log('testing testing testing!');
                   res.status(400).send('Error: Invalid Move');
                 } else {
                   res.send({ game: updatedGame });
