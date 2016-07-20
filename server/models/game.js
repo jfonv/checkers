@@ -37,10 +37,8 @@ schema.methods.move = function (currPlayer, piece, newPos, cb) {
   let moveSucceed = false;
   let pieceRemoveIdx = -1;
   if (this.isOutOfBounds(currPiece, newPos)) {
-    console.log('got here yo40');
     cb(invalidMoveError, null);
   } else if (this.isCollision(newPos)) {
-    console.log('got here yo43');
     cb(invalidMoveError, null);
   } else {
     const oldRow = Math.floor((currPiece.position - 1) / 4);
@@ -49,41 +47,20 @@ schema.methods.move = function (currPlayer, piece, newPos, cb) {
     if (currPiece &&
         (this.currPlayer1 ? this.player1 : this.player2).toString() === currPlayer &&
         this.currPlayer1 === (currPiece.player === 1) &&
-        Math.abs(oldRow - newRow) === 1 &&
-        !currPiece.king) {
+        Math.abs(oldRow - newRow) === 1) {
       moveSucceed = this.moveOne(currPiece, newPos);
-    // King basic move!
-    } else if (currPiece &&
-        (this.currPlayer1 ? this.player1 : this.player2).toString() === currPlayer &&
-        this.currPlayer1 === (currPiece.player === 1) &&
-        Math.abs(oldRow - newRow) === 1 &&
-        currPiece.king) {
-      moveSucceed = this.kingMoveOne(currPiece, newPos);
-      console.log('got here 57, ', moveSucceed, piece);
     // Jump move!
     } else if (currPiece &&
         (this.currPlayer1 ? this.player1 : this.player2).toString() === currPlayer &&
         this.currPlayer1 === (currPiece.player === 1) &&
-        Math.abs(oldRow - newRow) === 2 &&
-        !currPiece.king) {
+        Math.abs(oldRow - newRow) === 2) {
       const jumpMoveSucceed = this.moveJump(currPiece, newPos);
       if (jumpMoveSucceed) {
         moveSucceed = true;
         pieceRemoveIdx = jumpMoveSucceed.removeIdx;
       }
-    // King jump move!
-    } else if (currPiece &&
-        (this.currPlayer1 ? this.player1 : this.player2).toString() === currPlayer &&
-        this.currPlayer1 === (currPiece.player === 1) &&
-        Math.abs(oldRow - newRow) === 2 &&
-        currPiece.king) {
-      const jumpMoveSucceed = this.kingMoveJump(currPiece, newPos);
-      if (jumpMoveSucceed) {
-        moveSucceed = true;
-        pieceRemoveIdx = jumpMoveSucceed.removeIdx;
-      }
     } else {
-      // cb(invalidMoveError, null);
+      moveSucceed = false;
     }
 
     if (moveSucceed) {
@@ -115,40 +92,32 @@ schema.methods.move = function (currPlayer, piece, newPos, cb) {
 schema.methods.moveOne = function (currPiece, newPos) {
   const diff = newPos - currPiece.position;
   const row = Math.floor((currPiece.position - 1) / 4);
-  const even = row % 2;
-  const moves = [(currPiece.player % 2 === 1 ? 1 : -1) * (4 - (even ? 1 : 0)),
-                 (currPiece.player % 2 === 1 ? 1 : -1) * (5 - (even ? 1 : 0))];
-  console.log('vars: ');
-  console.log('diff: ', diff);
-  console.log('row: ', row);
-  console.log('even: ', even);
-  console.log('moves: ', moves);
-
+  const even = row % 2 === 0;
+  let moves = [];
+  if (even) {
+    if (currPiece.king) {
+      moves = [-3, -4, 4, 5];
+    } else if (this.currPlayer1) {
+      moves = [4, 5];
+    } else {
+      moves = [-3, -4];
+    }
+  } else {
+    if (currPiece.king) {
+      moves = [3, 4, -4, -5];
+    } else if (this.currPlayer1) {
+      moves = [3, 4];
+    } else {
+      moves = [-4, -5];
+    }
+  }
   if (moves.find((v) => v === diff)) {
     return true;
   }
 
   return false;
 };
-schema.methods.kingMoveOne = function (currPiece, newPos) {
-  const diff = newPos - currPiece.position;
-  const row = Math.floor((currPiece.position - 1) / 4);
-  const even = row % 2;
-  const moves = [(4 - even),
-                 (5 - even),
-                   -1 * (3 + even),
-                 -1 * (4 + even)];
-  // console.log('vars: ');
-  // console.log('diff: ', diff);
-  // console.log('row: ', row);
-  // console.log('even: ', even);
-  // console.log('moves: ', moves);
-  if (moves.find((v) => v === diff)) {
-    return true;
-  }
 
-  return false;
-};
 schema.methods.isKinged = function (currPiece, newPos) {
   if ((newPos > 28 && currPiece.player === 1) ||
      (newPos < 5 && currPiece.player === 2)) {
@@ -159,29 +128,8 @@ schema.methods.isKinged = function (currPiece, newPos) {
 };
 
 schema.methods.moveJump = function (currPiece, newPos) {
-  const currPosition = currPiece.position;
-  const diff = newPos - currPosition;
-  const mathStuff = ((currPiece.position - 1) % 4);
-  const rowEven = !(mathStuff % 2);
-  let jumpedPos = 0;
-  if (this.currPlayer1 && diff > 0) {
-    jumpedPos =
-      currPosition + (rowEven ? Math.ceil(diff / 2) : Math.floor(diff / 2));
-  } else if (!this.currPlayer1 && diff < 0) {
-    jumpedPos =
-      currPosition + (rowEven ? Math.floor(diff / 2) : Math.ceil(diff / 2));
-  } else {
-    return false;
-  }
-  //
-  // console.log('line 99: ', currPosition);
-  // console.log('line 99: ', diff);
-  // console.log('line 99: ', mathStuff);
-  // console.log('line 99: ', rowEven);
-  // console.log('line 99: ', jumpedPos);
-  // console.log('line 99: ', this.isCollision(jumpedPos));
-
-  if (!this.isCollision(jumpedPos)) {
+  const jumpedPos = this.getJumpedPosition(currPiece, newPos);
+  if (!jumpedPos || !this.isCollision(jumpedPos)) {
     return false;
   }
   const playerAtJump = this.pieces.find((v, i) => {
@@ -192,41 +140,21 @@ schema.methods.moveJump = function (currPiece, newPos) {
     return false;
   });
 
-  if (playerAtJump.player === currPiece.player) {
-    return false;
-  }
-  return { success: true, removeIdx: playerAtJump.index };
+  return !(playerAtJump.player === currPiece.player) ?
+         { success: true, removeIdx: playerAtJump.index } :
+         false;
 };
-schema.methods.kingMoveJump = function (currPiece, newPos) {
+
+schema.methods.getJumpedPosition = function (currPiece, newPos) {
+  const row = Math.floor((currPiece.position - 1) / 4);
+  const even = row % 2 === 0;
   const currPosition = currPiece.position;
   const diff = newPos - currPosition;
-  const mathStuff = ((currPiece.position - 1) % 4);
-  const rowEven = !(mathStuff % 2);
-  let jumpedPos = 0;
-  if (diff > 0) {
-    jumpedPos =
-      currPosition + (rowEven ? Math.ceil(diff / 2) : Math.floor(diff / 2));
-  } else {
-    jumpedPos =
-      currPosition + (rowEven ? Math.floor(diff / 2) : Math.ceil(diff / 2));
-  }
-
-  if (!this.isCollision(jumpedPos)) {
-    return false;
-  }
-  const playerAtJump = this.pieces.find((v, i) => {
-    if (v.position === jumpedPos) {
-      v.index = i;
-      return true;
-    }
-    return false;
-  });
-
-  if (playerAtJump.player === currPiece.player) {
-    return false;
-  }
-  return { success: true, removeIdx: playerAtJump.index };
+  return (currPiece.king || (this.currPlayer1 && diff > 0) || (!this.currPlayer1 && diff < 0)) ?
+    (currPosition + (even ? Math.ceil(diff / 2) : Math.floor(diff / 2))) :
+    false;
 };
+
 schema.methods.isOutOfBounds = function (currPiece, newPos) {
   if (newPos > 32 || newPos < 1) {
     return true;
@@ -236,9 +164,9 @@ schema.methods.isOutOfBounds = function (currPiece, newPos) {
   const diff = newPos - currPiece.position;
   const rowEven = !(((currPiece.position - 1) / 4) % 2);
   const moves = [];
-  console.log('diff: ', diff);
-  console.log('even: ', rowEven);
-  console.log('moves: ', moves);
+  // console.log('diff: ', diff);
+  // console.log('even: ', rowEven);
+  // console.log('moves: ', moves);
 
   if ((currPosMod === 0 && rowEven) ||
       (currPosMod === 1 && !rowEven)) {
@@ -287,7 +215,7 @@ schema.methods.updatePlayers = function (isDraw, cb) {
   const winner = (this.currPlayer1 ? this.player1 : this.player2);
   const p1Win = (winner === this.player1);
   const p2Win = (winner === this.player2);
-  if (isDraw) {
+  if (isDraw && this.completed) {
     this.model('Player').findById(this.player1, (err, player1) => {
       player1.draws += 1;
       this.model('Player').findById(this.player2, (err2, player2) => {
@@ -299,9 +227,8 @@ schema.methods.updatePlayers = function (isDraw, cb) {
         });
       });
     });
-  } else {
+  } else if (!this.completed) {
     this.model('Player').findById(this.player1, (err, player1) => {
-      console.log('line 304 - ', player1);
       if (p1Win) {
         player1.wins += 1;
       } else {
